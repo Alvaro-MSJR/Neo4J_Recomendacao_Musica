@@ -7,7 +7,7 @@ Criando um Algoritmo de Recomendação de Músicas Com Base Em Grafos
 [![Cypher](https://img.shields.io/badge/Cypher-FFE047?style=for-the-badge&logo=neo4j&logoColor=black)](https://neo4j.com/developer/cypher/)
 [![APOC](https://img.shields.io/badge/APOC-6DBE4E?style=for-the-badge&logo=neo4j&logoColor=white)](https://neo4j.com/labs/apoc/)
 [![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
-[![Licença](https://img.shields.io/badge/Licença-MIT-green.svg)](LICENSE)
+
 
 ## 📋 Sobre o Projeto
 
@@ -51,80 +51,84 @@ Inicie o Neo4j e crie um novo banco de dados (ex: recomendacao-musical).
 Abra o Neo4j Browser ou o console e execute os scripts na ordem indicada na seção Estrutura do Projeto.
 
 
-3. 🧠 **Modelagem de Dados (Grafo)**
+### 🧠 Modelagem de Dados (Grafo)
 
 O modelo foi projetado para capturar a riqueza das interações musicais.
 
-**Nós e Propriedades**
-Usuario: id, nome, idade, sexo, cidade
+- **Nós e Propriedades**
+- - Usuario: id, nome, idade, sexo, cidade
 
-Musica: id, titulo, anoLancamento, duracaoSeg, popularidade
+- - Musica: id, titulo, anoLancamento, duracaoSeg, popularidade
 
-Artista: id, nome, tipo ('Banda' ou 'Solista'), paisOrigem, anoInicio
+- - Artista: id, nome, tipo ('Banda' ou 'Solista'), paisOrigem, anoInicio
 
-Genero: id, nome, descricao, epocaPredominante, corHexadecimal
+- - Genero: id, nome, descricao, epocaPredominante, corHexadecimal
 
-**Relacionamentos e Propriedades**
-ESCUTOU (Usuario->Musica): dataHora, dispositivo, duracaoEscutaSeg, gostou, contexto
+- **Relacionamentos e Propriedades**
 
-CURTIU (Usuario->Musica): dataHora, dispositivo
+- - ESCUTOU (Usuario->Musica): dataHora, dispositivo, duracaoEscutaSeg, gostou, contexto
 
-SEGUE (Usuario->Artista): dataInicio, notificacoesAtivas
+- - CURTIU (Usuario->Musica): dataHora, dispositivo
 
-COMPOS (Artista->Musica): tipoParticipacao
+- - SEGUE (Usuario->Artista): dataInicio, notificacoesAtivas
 
-PERTENCE_A (Musica->Genero): relevancia
+- - COMPOS (Artista->Musica): tipoParticipacao
 
-**Diagrama do Modelo**
-https://./imagens/modelo_grafo.png
+- - PERTENCE_A (Musica->Genero): relevancia
 
-(Diagrama criado com Arrows.app)
+###  Diagrama do Modelo
 
-⚙️ **Funcionalidades e Queries de Recomendação**
-Foram implementadas 5 técnicas diferentes de recomendação, cada uma explorando uma característica distinta dos grafos.
+    https://./imagens/modelo_grafo.png
 
-**Similaridade (Baseada em Itens)**: Recomenda músicas dos mesmos gêneros das mais ouvidas pelo usuário.
+    (Diagrama criado com Arrows.app)
 
-**Comunidade (Baseada em Usuários)**: Usa o algoritmo de Louvain (GDS) para achar usuários com hábitos similares e recomendar o que eles curtem.
 
-**Caminhos**: Recomenda artistas seguidos por usuários que também seguem os artistas que o usuário alvo segue.
+### ⚙️ **Funcionalidades e Queries de Recomendação**
 
-**PageRank**: Identifica músicas "influentes" (alto PageRank) dentro de um subgrafo (ex: gênero preferido do usuário).
+- Foram implementadas 5 técnicas diferentes de recomendação, cada uma explorando uma característica distinta dos grafos.
 
-**Filtragem Demográfica**: Recomenda as músicas mais populares do gênero preferido por pessoas do mesmo perfil (idade/sexo).
+ - - **Similaridade (Baseada em Itens)**: Recomenda músicas dos mesmos gêneros das mais ouvidas pelo usuário.
 
-Todas as queries estão disponíveis no arquivo 
-/queries/02_recomendacoes.cypher.
+ - - **Comunidade (Baseada em Usuários)**: Usa o algoritmo de Louvain (GDS) para achar usuários com hábitos similares e recomendar o que eles curtem.
 
-🤖 **Inovação: Recomendação com APOC ML**
+ - - **Caminhos**: Recomenda artistas seguidos por usuários que também seguem os artistas que o usuário alvo segue.
+
+ - - **PageRank**: Identifica músicas "influentes" (alto PageRank) dentro de um subgrafo (ex: gênero preferido do usuário).
+
+ - - **Filtragem Demográfica**: Recomenda as músicas mais populares do gênero preferido por pessoas do mesmo perfil (idade/sexo).
+
+        Todas as queries estão disponíveis no arquivo  /queries/02_recomendacoes.cypher.
+
+### 🤖 Inovação: Recomendação com APOC ML
+
 Como diferencial inovador, o projeto explora o uso do procedimento apoc.ml.classification para criar um modelo preditivo simples. O modelo é treinado com features extraídas do grafo (como idade do usuário, popularidade da música e ano de lançamento) para prever se um usuário irá curtir uma nova música.
 
 O script de exemplo está em /queries/03_apoc_ml.cypher.
 
+
 ![Analise Técnica Comparativa](/imagens/analise.jpg). 
 
 
-Conclusão: Não há uma técnica "melhor" universalmente. A escolha depende do contexto de negócio (ex: recomendar novidades vs. recomendar sucessos) e dos dados disponíveis. A combinação de técnicas (ensemble) pode gerar resultados superiores.
+### **Conclusão**: 
+    
+    Não há uma técnica "melhor" universalmente. A escolha depende do contexto de negócio (ex: recomendar novidades vs. recomendar sucessos) e dos dados disponíveis. A combinação de técnicas (ensemble) pode gerar resultados superiores.
 
-📈 Próximos Passos e Melhorias
-Integração com API de Música: Conectar a uma API real (como Spotify) para obter dados de músicas e artistas reais.
 
-Sistema de Feedback: Implementar um ciclo de feedback para avaliar a acurácia das recomendações (ex: se o usuário ouviu a música recomendada).
+### 📈 Próximos Passos e Melhorias
 
-Modelo ML mais Robusto: Utilizar a biblioteca graphdatascience do Python para criar e treinar modelos de machine learning mais sofisticados (ex: GraphSAGE) diretamente no grafo.
+**Integração com API de Música**: Conectar a uma API real (como Spotify) para obter dados de músicas e artistas reais.
 
-Pipeline de Dados: Automatizar a carga e atualização dos dados com um pipeline ETL.
+**Sistema de Feedback**: Implementar um ciclo de feedback para avaliar a acurácia das recomendações (ex: se o usuário ouviu a música recomendada).
 
-🤝 Contribuições
+**Modelo ML mais Robusto**: Utilizar a biblioteca graphdatascience do Python para criar e treinar modelos de machine learning mais sofisticados (ex: GraphSAGE) diretamente no grafo.
+
+**Pipeline de Dados**: Automatizar a carga e atualização dos dados com um pipeline ETL.
+
+### 🤝 Contribuições
 Contribuições são bem-vindas! Sinta-se à vontade para abrir uma issue ou um pull request.
 
-📄 Licença
-Este projeto está licenciado sob a licença MIT - veja o arquivo LICENSE para detalhes.
-
-✨ Agradecimentos
-Agradeço à comunidade Neo4j e a todos os entusiastas de Ciência de Dados que compartilham conhecimento e tornam projetos como este possíveis.
-
-[Fim do projeto]
+### ✨ Agradecimentos
+Agradeço à Dio.me e a comunidade Neo4j e a todos os entusiastas de Ciência de Dados que compartilham conhecimento e tornam projetos como este possíveis.
 
 Muito obrigado pela atenção!
 
