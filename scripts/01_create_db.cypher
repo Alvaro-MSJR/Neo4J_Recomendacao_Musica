@@ -1,3 +1,5 @@
+Match (n) DETACH DELETE n;
+
 DROP CONSTRAINT unique_song IF EXISTS;
 DROP CONSTRAINT unique_song_title IF EXISTS;
 DROP CONSTRAINT song_composite_key IF EXISTS;
@@ -320,26 +322,42 @@ CREATE (u:User {
     city: userData.cidade
 });
 
-
+// VERSÃO DESCONTINUADA, POIS CARREGAVA MUSICAS DUPLICADAS E NÃO RESPEITAVA A NODE KEY (TITLE)
+// somente ira funcionar se retirar a constraint de title 
+//
 //BLOCO 5: Criação das Músicas (baseado no CSV)
-//cypher
-// Extrair ano do release date e converter duração para segundos
-LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/Alvaro-MSJR/Neo4J_Recomendacao_Musica/refs/heads/main/scripts/archive/spotify_songs.csv' AS row
-WITH row
-LIMIT 1500
-CREATE (s:Song {
-    id: 'song_' + randomUUID() ,
-    title: row.track_name,
-    releaseYear: toInteger(split(row.track_album_release_date, '-')[0]),
-    durationSec: toInteger(row.duration_ms) / 1000,
-    popularity: toInteger(row.track_popularity)
-});
-
+//   Extrair ano do release date e converter duração para segundos
+//   Cypher
+//   LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/Alvaro-MSJR/Neo4J_Recomendacao_Musica/refs/heads/main/scripts/archive/spotify_songs.csv' AS row
+//   WITH row
+//   LIMIT 720
+//   CREATE (s:Song {
+//       id: 				'song_' + randomUUID() 									,
+//       title: 				row.track_name											,
+//       releaseYear: 		toInteger(split(row.track_album_release_date, '-')[0])	,
+//       durationSec: 		toInteger(row.duration_ms) / 1000						,
+//       popularity: 		toInteger(row.track_popularity)							,
+//       playlist_name: 		row.playlist_name				,
+//       playlist_genre : 	row.playlist_genre				,
+//       track_artist : 		row.track_artist				,
+//       album_name : 		row.album_name					,
+//       album_release_date: row.track_album_release_date	,
+//       playlist_id: 		row.playlist_id					,
+//       playlist_subgenre:  row.playlist_subgenre			,	
+//       danceability: 		row.danceability				,
+//       energy: 			row.energy		    			,
+//       loudness: 			row.loudness		    		,
+//       mode: 				row.mode		        		,
+//       speechiness: 		row.speechiness					,
+//       acousticness: 		row.acousticness				,
+//       track_popularity: 	toInteger(row.track_popularity)
+//   });	
 
 // BLOCO 5: Carga de Músicas com MERGE e tratamento de Node Key
+//Cypher
 LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/Alvaro-MSJR/Neo4J_Recomendacao_Musica/refs/heads/main/scripts/archive/spotify_songs.csv' AS row
 WITH row
-LIMIT 1800
+LIMIT 720
 
 // 1. O MERGE busca apenas pelo título (único)
 MERGE (s:Song { title: row.track_name })
@@ -348,58 +366,136 @@ MERGE (s:Song { title: row.track_name })
 // sejam preenchidas no exato momento da criação do nó.
 ON CREATE SET 
     s.id = 'song_' + randomUUID(),
-    s.releaseYear = toInteger(split(row.track_album_release_date, '-')[0]),
-    s.durationSec = toInteger(row.duration_ms) / 1000,
-    s.popularity = toInteger(row.track_popularity)
-
+    s.releaseYear 		 = toInteger(split(row.track_album_release_date, '-')[0]),
+    s.durationSec 		 = toInteger(row.duration_ms) / 1000,
+    s.popularity 		 = toInteger(row.track_popularity),
+    s.playlist_name 	 = row.playlist_name,
+    s.playlist_genre 	 = row.playlist_genre,
+    s.track_artist 		 = row.track_artist,
+    s.album_name 		 = row.album_name,
+    s.album_release_date = row.track_album_release_date,
+    s.playlist_id		 = row.playlist_id		,
+    s.playlist_subgenre	 = row.playlist_subgenre,	
+    s.danceability		 = row.danceability		,
+    s.energy		     = row.energy		    ,
+    s.loudness		     = row.loudness		    ,
+    s.mode		         = row.mode		        ,
+    s.speechiness		 = row.speechiness		,
+    s.acousticness       = row.acousticness     ,
+    s.track_popularity   = toInteger(row.track_popularity)
 // 3. (Opcional) Caso queira atualizar a popularidade se a música já existir:
 ON MATCH SET 
     s.popularity = toInteger(row.track_popularity);
 
-
-
+//
+//  DESCONTINUADO
+//
 //BLOCO 6: Relacionamentos COMPOS (Artist -> Song)
-//cypher
 // Conectar artistas às músicas que eles compõem/performam
+//Cypher
+//  LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/Alvaro-MSJR/Neo4J_Recomendacao_Musica/refs/heads/main/scripts/archive/spotify_songs.csv' AS row
+//  WITH row
+//  LIMIT 1600
+//  MATCH (a:Artist {name: row.track_artist})
+//  MATCH (s:Song {title: row.track_name})
+//  WHERE s.releaseYear = toInteger(split(row.track_album_release_date, '-')[0])
+//  CREATE (a)-[:COMPOSED {
+//      participationType: CASE 
+//          WHEN row.track_name CONTAINS 'Remix' THEN 'Remixer'
+//          WHEN row.track_name CONTAINS 'feat' THEN 'Featured Artist'
+//          ELSE 'Main Artist'
+//      END
+//  }]->(s);
+
+// BLOCO 6: Relacionamentos COMPOSED (Refatorado)  (Artist -> Song)
+// Conectar artistas às músicas que eles compõem/performam
+//Cypher
 LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/Alvaro-MSJR/Neo4J_Recomendacao_Musica/refs/heads/main/scripts/archive/spotify_songs.csv' AS row
 WITH row
-LIMIT 1800
-MATCH (a:Artist {name: row.track_artist})
+LIMIT 25000
+
+// 1. Usamos MERGE para garantir que o artista exista (mesmo que não esteja no Bloco 3)
+MERGE (a:Artist {name: row.track_artist})
+ON CREATE SET a.id = 'artist_' + randomUUID(), a.type = 'Unknown'
+
+WITH a, row
+
+// 2. Buscamos a música (que já deve ter sido carregada no Bloco 5)
 MATCH (s:Song {title: row.track_name})
-WHERE s.releaseYear = toInteger(split(row.track_album_release_date, '-')[0])
-CREATE (a)-[:COMPOSED {
-    participationType: CASE 
+
+WITH a, s, row
+
+// 3. Criamos o relacionamento (usando MERGE para evitar duplicatas se rodar de novo)
+MERGE (a)-[r:COMPOSED]->(s)
+ON CREATE SET r.participationType = CASE 
         WHEN row.track_name CONTAINS 'Remix' THEN 'Remixer'
         WHEN row.track_name CONTAINS 'feat' THEN 'Featured Artist'
         ELSE 'Main Artist'
-    END
-}]->(s);
+    END;
 
-
+// 
+//  DESCONTINUADO, POIS NÃO CARREGAVA CORRETAMENTE OS GENEROS, GERANDO DUPLICIDADE DE RELACIONAMENTO 
+//
 //BLOCO 7: Relacionamentos PERTENCE_A (Song -> Genre)
-//cypher
 // Conectar músicas aos gêneros
+// 
+//Cypher
+// LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/Alvaro-MSJR/Neo4J_Recomendacao_Musica/refs/heads/main/scripts/archive/spotify_songs.csv' AS row
+// WITH row
+// LIMIT 1600
+// MATCH (s:Song {title: row.track_name})
+// OPTIONAL MATCH (g:Genre {name: 
+//     CASE 
+//         WHEN row.playlist_genre = 'pop' THEN 'Pop'
+//         WHEN row.playlist_genre = 'dance pop' THEN 'Dance Pop'
+//         WHEN row.playlist_genre = 'electropop' THEN 'Electropop'
+//         WHEN row.playlist_genre = 'post-teen pop' THEN 'Post-Teen Pop'
+//         ELSE 'Indie Poptimism'
+//     END
+// })
+// WHERE g IS NOT NULL
+// CREATE (s)-[:BELONGS_TO {
+//     relevance: CASE 
+//         WHEN toFloat(row.popularity) > 80 THEN 'High'
+//         WHEN toFloat(row.popularity) > 60 THEN 'Medium'
+//         ELSE 'Low'
+//     END
+// }]->(g);
+
+
+// BLOCO 7: Relacionamentos PERTENCE_A (Song -> Genre) - SOLUÇÃO DEFINITIVA
+// Conectar músicas aos gêneros
+//Cypher
 LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/Alvaro-MSJR/Neo4J_Recomendacao_Musica/refs/heads/main/scripts/archive/spotify_songs.csv' AS row
 WITH row
-LIMIT 1800
+LIMIT 25000
+
+// 1. Localiza a música criada no Bloco 5
 MATCH (s:Song {title: row.track_name})
-OPTIONAL MATCH (g:Genre {name: 
+
+// 2. Normaliza o gênero do CSV para bater com o Bloco 2 (Case Sensitive fix)
+WITH s, row,
     CASE 
+        WHEN row.playlist_genre IS NULL OR row.playlist_genre = "" THEN 'Indie Poptimism'
         WHEN row.playlist_genre = 'pop' THEN 'Pop'
         WHEN row.playlist_genre = 'dance pop' THEN 'Dance Pop'
         WHEN row.playlist_genre = 'electropop' THEN 'Electropop'
         WHEN row.playlist_genre = 'post-teen pop' THEN 'Post-Teen Pop'
-        ELSE 'Indie Poptimism'
-    END
-})
-WHERE g IS NOT NULL
-CREATE (s)-[:BELONGS_TO {
-    relevance: CASE 
-        WHEN toFloat(row.popularity) > 80 THEN 'High'
-        WHEN toFloat(row.popularity) > 60 THEN 'Medium'
+        WHEN row.playlist_genre = 'latin' THEN 'Pop' // Opcional: agrupar gêneros extras
+        ELSE row.playlist_genre 
+    END AS genreName
+
+// 3. Busca o gênero (agora com o nome corrigido ex: 'Pop')
+MATCH (g:Genre {name: genreName})
+
+// 4. Cria o relacionamento garantindo unicidade
+MERGE (s)-[r:BELONGS_TO]->(g)
+ON CREATE SET r.relevance = 
+    CASE 
+        WHEN toInteger(row.track_popularity) > 80 THEN 'High'
+        WHEN toInteger(row.track_popularity) > 60 THEN 'Medium'
         ELSE 'Low'
-    END
-}]->(g);
+    END;
 
 //BLOCO 8: Relacionamentos ESCUTOU (User -> Song)
 //cypher
@@ -434,7 +530,7 @@ CREATE (user)-[:LISTENED {
 MATCH (u:User)-[l:LISTENED]->(s:Song)
 WHERE l.liked = true
 WITH u, s, l.timestamp AS listenTime, l.device AS device
-LIMIT 2800
+LIMIT 1600
 CREATE (u)-[:LIKED {
     timestamp: listenTime + duration({minutes: toInteger(rand() * 60)}),
     device: device
