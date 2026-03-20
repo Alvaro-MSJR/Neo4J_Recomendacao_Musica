@@ -34,7 +34,7 @@ Este documento contém 10 queries Cypher desenvolvidas para análise de comporta
 7. [Usuários com gostos similares](#query-7-usuários-com-gostos-similares)
 8. [Usuários com gostos similares adaptação](#query-8-usuários-com-gostos-similares-adaptação)
 9. [Usuários com gostos similares foco em gênero mais abrangente](#query-9-usuários-com-gostos-similares-foco-em-gênero-mais-abrangente)
-10. [Análise de engajamento por dispositivo]
+10. [Análise de engajamento por dispositivo](#query-10-análise-de-engajamento-por-dispositivo)
 11. [Músicas antigas com alta popularidade atual](#query-11-músicas-antigas-com-alta-popularidade-atual)
 12. [Artistas em alta (últimos 30 dias)](#query-12-artistas-em-alta-últimos-30-dias)
 
@@ -328,10 +328,9 @@ LIMIT 10;
 ## Query 9: Usuários com gostos similares foco em gênero mais abrangente
 
 **Objetivo**:  Relacionamentos PERTENCE_A (Song -> Genre) 
-
 ```
-  // cypher 
- // Substitua 'user_efd9d1d5-bdfc-46ae-9d10-96952e295232' pelo ID do usuário real
+// cypher 
+// Substitua 'user_efd9d1d5-bdfc-46ae-9d10-96952e295232' pelo ID do usuário real
 MATCH (u1:User)-[:LIKED]->(s:Song)-[:BELONGS_TO]->(g:Genre)
 WITH u1, COLLECT(DISTINCT g) AS generosUser1
 
@@ -348,8 +347,7 @@ RETURN u2.name AS usuarioSimilar,
        u2.city AS cidade,
        generosEmComum
 ORDER BY generosEmComum DESC;
-
-´´´
+```
 
 💡 Recomendação: Use estes dados para criar features sociais como "Amigos com gostos parecidos" ou "Descobertas baseadas em usuários similares". As sugestões musicais podem ser apresentadas como "Pessoas como você também curtem...".
 
@@ -359,6 +357,7 @@ Exemplo de resultado esperado:
 | :--- | :--- | :--- | :--- | :--- |
 | Maria Santos | 28 | Rio de Janeiro | 7 | ["Don't Start Now", "Physical", "Levitating"] |
 | Pedro Oliveira | 32 | Belo Horizonte | 5 | ["Break My Heart", "New Rules", "IDGAF"] |
+
 
 ## Query 10: Análise de engajamento por dispositivo
 
@@ -482,9 +481,11 @@ Exemplo de resultado esperado:
 | 5 | Score de influência | Ranking multi-fator | Posicionamento estratégico de artistas |
 | 6 | Recomendação por curtidas | Personalização | Seção "Recomendados para você" |
 | 7 | Usuários similares | Recomendação social | Features de descoberta social |
-| 8 | Análise por dispositivo | Otimização UX | Melhorias de interface por plataforma |
-| 9 | Músicas antigas populares | Curadoria de catálogo | Playlist "Clássicos" e campanhas nostálgicas |
-| 10 | Artistas em alta | Detecção de tendências | Seção "Em alta" e identificação de novos talentos |
+| 8 | Usuários similares | Recomendação social adaptada| Features de descoberta social |
+| 9 | Usuários similares | Recomendação social gênero | Features de descoberta social |
+| 10 | Análise por dispositivo | Otimização UX | Melhorias de interface por plataforma |
+| 11 | Músicas antigas populares | Curadoria de catálogo | Playlist "Clássicos" e campanhas nostálgicas |
+| 12 | Artistas em alta | Detecção de tendências | Seção "Em alta" e identificação de novos talentos |
 
 ## 🚀 Como Executar as Queries
 
