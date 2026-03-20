@@ -1,3 +1,6 @@
+// ****************************************************************
+// inicialização do banco de dados: limpeza, criação de constraints, carga de dados
+// *****************************************************************
 Match (n) DETACH DELETE n;
 
 DROP CONSTRAINT unique_song IF EXISTS;
@@ -16,7 +19,9 @@ DROP CONSTRAINT unique_user IF EXISTS;
 DROP CONSTRAINT unique_user_name IF EXISTS;
 DROP CONSTRAINT user_composite_key IF EXISTS;
 
-//BLOCO 1: Criação das Constraints (Índices de Unicidade)
+// *****************************************************************
+//  BLOCO 1: Criação das Constraints (Índices de Unicidade)
+// *****************************************************************
 //cypher
 // Criar constraints para garantir unicidade e performance
 CREATE CONSTRAINT unique_song IF NOT EXISTS FOR (s:Song) REQUIRE s.id IS UNIQUE;
@@ -39,7 +44,9 @@ CREATE CONSTRAINT unique_user_name IF NOT EXISTS FOR (u:User) REQUIRE u.name IS 
 CREATE CONSTRAINT user_composite_key IF NOT EXISTS
 FOR (u:User) REQUIRE (u.id, u.name) IS NODE KEY;
 
-//BLOCO 2: Criação dos Gêneros Musicais
+// *****************************************************************
+//  BLOCO 2: Criação dos Gêneros Musicais
+// *****************************************************************
 //cypher
 // Criar gêneros com todas as propriedades necessárias
 CREATE (g1:Genre {
@@ -82,7 +89,9 @@ CREATE (g5:Genre {
     hexColor: '#20B2AA'
 });
 
-//BLOCO 3: Criação dos Artistas
+// *****************************************************************
+//  BLOCO 3: Criação dos Artistas
+// *****************************************************************
 //cypher
 // Criar artistas com todas as propriedades necessárias
 CREATE (a1:Artist {
@@ -229,7 +238,10 @@ CREATE (a18:Artist {
     startYear: 2002
 });
 
-//BLOCO 4: Criação dos Usuários (80 usuários)
+
+// *****************************************************************
+//   BLOCO 4: Criação dos Usuários (80 usuários)
+// *****************************************************************
 //cypher
 // Criar 80 usuários com nome composto, idade, sexo e cidade
 UNWIND [
@@ -322,10 +334,15 @@ CREATE (u:User {
     city: userData.cidade
 });
 
-// VERSÃO DESCONTINUADA, POIS CARREGAVA MUSICAS DUPLICADAS E NÃO RESPEITAVA A NODE KEY (TITLE)
-// somente ira funcionar se retirar a constraint de title 
-//
-//BLOCO 5: Criação das Músicas (baseado no CSV)
+
+
+// *****************************************************************
+// VERSÃO DESCONTINUADA - BLOCO 5
+//     CARREGAVA MUSICAS DUPLICADAS E NÃO RESPEITAVA A NODE KEY (TITLE)
+//     Somente irá funcionar se retirar a constraint de title 
+// *****************************************************************
+//  BLOCO 5: Criação das Músicas (baseado no CSV)
+// *****************************************************************
 //   Extrair ano do release date e converter duração para segundos
 //   Cypher
 //   LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/Alvaro-MSJR/Neo4J_Recomendacao_Musica/refs/heads/main/scripts/archive/spotify_songs.csv' AS row
@@ -333,27 +350,30 @@ CREATE (u:User {
 //   LIMIT 720
 //   CREATE (s:Song {
 //       id: 				'song_' + randomUUID() 									,
-//       title: 				row.track_name											,
-//       releaseYear: 		toInteger(split(row.track_album_release_date, '-')[0])	,
-//       durationSec: 		toInteger(row.duration_ms) / 1000						,
-//       popularity: 		toInteger(row.track_popularity)							,
-//       playlist_name: 		row.playlist_name				,
-//       playlist_genre : 	row.playlist_genre				,
-//       track_artist : 		row.track_artist				,
-//       album_name : 		row.album_name					,
+//       title: 			 row.track_name											,
+//       releaseYear: 		 toInteger(split(row.track_album_release_date, '-')[0])	,
+//       durationSec: 		 toInteger(row.duration_ms) / 1000						,
+//       popularity: 		 toInteger(row.track_popularity)							,
+//       playlist_name: 	 row.playlist_name				,
+//       playlist_genre: 	 row.playlist_genre				,
+//       track_artist: 		 row.track_artist				,
+//       album_name: 		 row.album_name					,
 //       album_release_date: row.track_album_release_date	,
-//       playlist_id: 		row.playlist_id					,
+//       playlist_id: 		 row.playlist_id					,
 //       playlist_subgenre:  row.playlist_subgenre			,	
-//       danceability: 		row.danceability				,
-//       energy: 			row.energy		    			,
-//       loudness: 			row.loudness		    		,
-//       mode: 				row.mode		        		,
-//       speechiness: 		row.speechiness					,
-//       acousticness: 		row.acousticness				,
-//       track_popularity: 	toInteger(row.track_popularity)
+//       danceability: 		 row.danceability				,
+//       energy: 			 row.energy		    			,
+//       loudness: 			 row.loudness		    		,
+//       mode: 				 row.mode		        		,
+//       speechiness: 		 row.speechiness					,
+//       acousticness: 		 row.acousticness				,
+//       track_popularity: 	 toInteger(row.track_popularity)
 //   });	
 
-// BLOCO 5: Carga de Músicas com MERGE e tratamento de Node Key
+
+// *****************************************************************
+//  BLOCO 5: Carga de Músicas com MERGE e tratamento de Node Key
+// *****************************************************************
 //Cypher
 LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/Alvaro-MSJR/Neo4J_Recomendacao_Musica/refs/heads/main/scripts/archive/spotify_songs.csv' AS row
 WITH row
@@ -387,10 +407,12 @@ ON CREATE SET
 ON MATCH SET 
     s.popularity = toInteger(row.track_popularity);
 
-//
-//  DESCONTINUADO
-//
-//BLOCO 6: Relacionamentos COMPOS (Artist -> Song)
+
+// *****************************************************************
+//   DESCONTINUADO - BLOCO 6
+// *****************************************************************
+//  BLOCO 6: Relacionamentos COMPOS (Artist -> Song)
+// *****************************************************************
 // Conectar artistas às músicas que eles compõem/performam
 //Cypher
 //  LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/Alvaro-MSJR/Neo4J_Recomendacao_Musica/refs/heads/main/scripts/archive/spotify_songs.csv' AS row
@@ -407,8 +429,9 @@ ON MATCH SET
 //      END
 //  }]->(s);
 
-
-// BLOCO 6: Relacionamentos COMPOSED (Artist -> Song)
+// *****************************************************************
+//  BLOCO 6: Relacionamentos COMPOSED (Artist -> Song)
+// *****************************************************************
 // Somente relaciona se o artista já existir no banco (Bloco 3)
 // Conectar artistas às músicas que eles compõem/performam
 //Cypher
@@ -431,10 +454,13 @@ ON CREATE SET r.participationType = CASE
     END;
 
 
- 
+
+//  ***************************************************************** 
 //  DESCONTINUADO, POIS NÃO CARREGAVA CORRETAMENTE OS GENEROS, GERANDO DUPLICIDADE DE RELACIONAMENTO 
 //
-//BLOCO 7: Relacionamentos PERTENCE_A (Song -> Genre)
+// *****************************************************************
+//  BLOCO 7: Relacionamentos PERTENCE_A (Song -> Genre)
+// *****************************************************************
 // Conectar músicas aos gêneros
 // 
 //Cypher
@@ -460,8 +486,9 @@ ON CREATE SET r.participationType = CASE
 //     END
 // }]->(g);
 
-
-// BLOCO 7: Relacionamentos PERTENCE_A (Song -> Genre) - SOLUÇÃO DEFINITIVA
+// *****************************************************************
+//  BLOCO 7: Relacionamentos PERTENCE_A (Song -> Genre) - SOLUÇÃO DEFINITIVA
+// *****************************************************************
 // Conectar músicas aos gêneros
 //Cypher
 LOAD CSV WITH HEADERS FROM 'https://raw.githubusercontent.com/Alvaro-MSJR/Neo4J_Recomendacao_Musica/refs/heads/main/scripts/archive/spotify_songs.csv' AS row
@@ -496,9 +523,13 @@ ON CREATE SET r.relevance =
         WHEN toInteger(row.track_popularity) > 60 THEN 'Medium'
         ELSE 'Low'
     END;
-
-// problema na carga estamos randomizando a massa para os arqtista e gêneros, para evitar que tenhamos músicas sem gênero ou sem artista, o que prejudicaria a análise de recomendação posteriormente.
-// Atualização randômica de playlist_genre para todas as músicas
+// *****************************************************************
+//     BLOCO 7
+/*    Problema na carga estamos randomizando a massa para os arqtista e gêneros, para evitar que tenhamos músicas 
+   sem gênero ou sem artista, o que prejudicaria a análise de recomendação posteriormente.
+      Atualização randômica de playlist_genre para todas as músicas
+*/
+// *****************************************************************
 MATCH (s:Song)
 WITH s, toInteger(rand() * 7) AS seletor
 SET s.playlist_genre = 
@@ -511,10 +542,11 @@ SET s.playlist_genre =
         WHEN 5 THEN 'New Age'
         ELSE 'Indie Poptimism'
     END;
-
-// Querys de analise de integridade e amostras de dados do bloco 7
-
+// *****************************************************************
+//     BLOCO 7
+// Querys de analise de integridade e amostras de dados 
 // Relacionamentos duplicados (mesma música ligada ao mesmo gênero mais de uma vez)
+// *****************************************************************
 MATCH (s:Song)-[r:BELONGS_TO]->(g:Genre)
 WITH s, g, count(r) AS TotalRelacionamentos
 WHERE TotalRelacionamentos > 1
@@ -557,7 +589,9 @@ RETURN count(s) AS MusicasSemGenero;
 
 
 
-//BLOCO 8: Relacionamentos ESCUTOU (User -> Song)
+// *****************************************************************
+//  BLOCO 8: Relacionamentos ESCUTOU (User -> Song)
+// *****************************************************************
 //cypher
 // Criar relacionamentos de escuta entre usuários e músicas
 MATCH (:User)-[r:LISTENED]->(:Song)
@@ -588,8 +622,9 @@ CREATE (user)-[:LISTENED {
 }]->(song);
 
 
-
+// *****************************************************************
 // Auditoria de qualidade do bloco 8
+// *****************************************************************
 //Para garantir que sua base de dados está íntegra e sem "nós órfãos" (nós que deveriam estar conectados, mas ficaram isolados), preparei um conjunto de queries de auditoria.
 //No seu modelo, um nó é considerado órfão se não possui os relacionamentos essenciais: COMPOSED, BELONGS_TO ou LISTENED.
 
@@ -697,13 +732,9 @@ DETACH DELETE s;
 
 
 
-
-
-
-
-
-
-//BLOCO 9: Relacionamentos CURTIU (User -> Song)
+// *****************************************************************
+//  BLOCO 9: Relacionamentos CURTIU (User -> Song)
+// *****************************************************************
 //cypher
 // Criar relacionamentos de curtida (30% das músicas escutadas são curtidas)
 MATCH (u:User)-[l:LISTENED]->(s:Song)
@@ -715,7 +746,11 @@ CREATE (u)-[:LIKED {
     device: device
 }]->(s);
 
-//BLOCO 10: Relacionamentos SEGUE (User -> Artist)
+
+
+// *****************************************************************
+//  BLOCO 10: Relacionamentos SEGUE (User -> Artist)
+// *****************************************************************
 //cypher
 // Criar relacionamentos de seguir artistas
 MATCH (u:User)
@@ -731,7 +766,9 @@ CREATE (user)-[:FOLLOWS {
 }]->(artist);
 
 
-//BLOCO 11: Verificação de Integridade
+// *****************************************************************
+//  BLOCO 11: Verificação de Integridade
+// *****************************************************************
 //cypher
 // Verificar todos os nós e suas propriedades
 MATCH (u:User) RETURN 'Usuários: ' + COUNT(u) AS Tipo, COLLECT(u.name)[0..3] AS Amostra
