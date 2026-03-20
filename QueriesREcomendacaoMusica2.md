@@ -32,9 +32,11 @@ Este documento contém 10 queries Cypher desenvolvidas para análise de comporta
 5. [Artistas mais influentes (score combinado)](#query-5-artistas-mais-influentes-score-combinado)
 6. [Recomendação de músicas baseada em curtidas](#query-6-recomendação-de-músicas-baseada-em-curtidas)
 7. [Usuários com gostos similares](#query-7-usuários-com-gostos-similares)
-8. [Análise de engajamento por dispositivo](#query-8-análise-de-engajamento-por-dispositivo)
-9. [Músicas antigas com alta popularidade atual](#query-9-músicas-antigas-com-alta-popularidade-atual)
-10. [Artistas em alta (últimos 30 dias)](#query-10-artistas-em-alta-últimos-30-dias)
+8. [Usuários com gostos similares adaptação](#query-8-usuários-com-gostos-similares-adaptação)
+9. [Usuários com gostos similares foco em gênero mais abrangente](#query-9-usuários-com-gostos-similares-foco-em-gênero-mais-abrangente)
+10. [Análise de engajamento por dispositivo]
+11. [Músicas antigas com alta popularidade atual](#query-11-músicas-antigas-com-alta-popularidade-atual)
+12. [Artistas em alta (últimos 30 dias)](#query-12-artistas-em-alta-últimos-30-dias)
 
 ---
 
@@ -260,8 +262,8 @@ Exemplo de resultado esperado:
 
 **Objetivo**: Encontrar usuários com padrões de curtidas semelhantes para recomendações sociais.
 
-``` //
-//cypher
+```
+    //cypher
 
 // Substitua 'user_efd9d1d5-bdfc-46ae-9d10-96952e295232' pelo ID do usuário real
 MATCH (u1:User {id: 'user_efd9d1d5-bdfc-46ae-9d10-96952e295232'})-[:LIKED]->(s:Song)
@@ -283,13 +285,15 @@ ORDER BY musicasEmComum DESC
 LIMIT 3;
 ```
 
-## Query 7.1: Usuários com gostos similares
+
+## Query 8: Usuários com gostos similares adaptação 
 
 **Objetivo**:  Relacionamentos PERTENCE_A (Song -> Genre) Aqui está uma versão mais flexível que se adapta à realidade do seu banco: 
 
-``` // cypher
-//Substitua 'user_efd9d1d5-bdfc-46ae-9d10-96952e295232' pelo ID do usuário real
+``` 
+// cypher
 
+//Substitua 'user_efd9d1d5-bdfc-46ae-9d10-96952e295232' pelo ID do usuário real
 MATCH (u1:User )-[:LIKED]->(s:Song)
 WITH u1, COLLECT(s) AS musicasUser1, COUNT(s) AS totalCurtidasUser1
 
@@ -321,13 +325,13 @@ ORDER BY percentualSimilaridade DESC, musicasEmComum DESC
 LIMIT 10;
 ```
 
-## Query 7.2: Usuários com gostos similares foco em gênero (mais abrangente)
+## Query 9: Usuários com gostos similares foco em gênero mais abrangente
 
 **Objetivo**:  Relacionamentos PERTENCE_A (Song -> Genre) 
 
-``` // cypher 
-
-// Substitua 'user_efd9d1d5-bdfc-46ae-9d10-96952e295232' pelo ID do usuário real
+```
+  // cypher 
+ // Substitua 'user_efd9d1d5-bdfc-46ae-9d10-96952e295232' pelo ID do usuário real
 MATCH (u1:User)-[:LIKED]->(s:Song)-[:BELONGS_TO]->(g:Genre)
 WITH u1, COLLECT(DISTINCT g) AS generosUser1
 
@@ -344,6 +348,7 @@ RETURN u2.name AS usuarioSimilar,
        u2.city AS cidade,
        generosEmComum
 ORDER BY generosEmComum DESC;
+
 ´´´
 
 💡 Recomendação: Use estes dados para criar features sociais como "Amigos com gostos parecidos" ou "Descobertas baseadas em usuários similares". As sugestões musicais podem ser apresentadas como "Pessoas como você também curtem...".
@@ -355,12 +360,12 @@ Exemplo de resultado esperado:
 | Maria Santos | 28 | Rio de Janeiro | 7 | ["Don't Start Now", "Physical", "Levitating"] |
 | Pedro Oliveira | 32 | Belo Horizonte | 5 | ["Break My Heart", "New Rules", "IDGAF"] |
 
-## Query 8: Análise de engajamento por dispositivo
+## Query 10: Análise de engajamento por dispositivo
 
 **Objetivo**: Identificar padrões de consumo e preferências por tipo de dispositivo.
 
-``` //
-//cypher
+```
+   // cypher
 
 MATCH (u:User)-[l:LISTENED]->(s:Song)
 RETURN l.device AS dispositivo,
@@ -382,7 +387,7 @@ Exemplo de resultado esperado:
 | Mobile | 8.345 | 72 | 142,5 | 198,3 | 67,5% | ["Commute", "Workout", "Home"] |
 | Desktop | 3.890 | 45 | 245,8 | 201,2 | 72,3% | ["Home", "Work"] |
 
-## Query 9: Músicas antigas com alta popularidade atual
+## Query 11: Músicas antigas com alta popularidade atual
 
 **Objetivo**: Encontrar músicas de anos anteriores que mantêm relevância e são frequentemente escutadas.
 
@@ -415,7 +420,7 @@ Exemplo de resultado esperado:
 | "Wake Me Up" | 2013 | Avicii | 84 | 567 | 4 | ["Workout", "Party", "Home", "Commute"] |
 | "Counting Stars" | 2013 | OneRepublic | 80 | 432 | 4 | ["Home", "Workout", "Commute"] |
 
-## Query 10: Artistas em alta (últimos 30 dias)
+## Query 12: Artistas em alta (últimos 30 dias)
 
 **Objetivo**: Identificar artistas com crescimento significativo de ouvintes no período recente.
 
