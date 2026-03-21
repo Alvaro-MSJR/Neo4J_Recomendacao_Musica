@@ -11,7 +11,8 @@ Este documento contém 10 queries Cypher desenvolvidas para análise de comporta
 | **User** | id, name, age, gender, city |
 | **Artist** | id, name, type (Soloist/Band), countryOfOrigin, startYear |
 | **Genre** | id, name, description, predominantEra, hexColor |
-| **Song** | id, title, releaseYear, durationSec, popularity |
+| **Song** |title ,track_popularity ,playlist_subgenre , playlist_name , playlist_id , mode , loudness , energy, danceability , album_release_date , danceability , acousticness |
+
 
 #### Relacionamentos e Propriedades
 | Relacionamento | Propriedades |

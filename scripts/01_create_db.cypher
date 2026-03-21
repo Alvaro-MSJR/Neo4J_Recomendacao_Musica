@@ -355,12 +355,12 @@ CREATE (u:User {
 //       durationSec: 		 toInteger(row.duration_ms) / 1000						,
 //       popularity: 		 toInteger(row.track_popularity)							,
 //       playlist_name: 	 row.playlist_name				,
-//       playlist_genre: 	 row.playlist_genre				,
+//       playlist_genre: 	 row.playlist_subgenre				,
 //       track_artist: 		 row.track_artist				,
 //       album_name: 		 row.album_name					,
 //       album_release_date: row.track_album_release_date	,
 //       playlist_id: 		 row.playlist_id					,
-//       playlist_subgenre:  row.playlist_subgenre			,	
+//       playlist_subgenre:  row.playlist_genre			,	
 //       danceability: 		 row.danceability				,
 //       energy: 			 row.energy		    			,
 //       loudness: 			 row.loudness		    		,
@@ -390,12 +390,12 @@ ON CREATE SET
     s.durationSec 		 = toInteger(row.duration_ms) / 1000,
     s.popularity 		 = toInteger(row.track_popularity),
     s.playlist_name 	 = row.playlist_name,
-    s.playlist_genre 	 = row.playlist_genre,
+    s.playlist_genre 	 = row.playlist_subgenre,
     s.track_artist 		 = row.track_artist,
     s.album_name 		 = row.album_name,
     s.album_release_date = row.track_album_release_date,
     s.playlist_id		 = row.playlist_id		,
-    s.playlist_subgenre	 = row.playlist_subgenre,	
+    s.playlist_subgenre	 = row.playlist_genre,	
     s.danceability		 = row.danceability		,
     s.energy		     = row.energy		    ,
     s.loudness		     = row.loudness		    ,
@@ -740,7 +740,6 @@ DETACH DELETE s;
 MATCH (u:User)-[l:LISTENED]->(s:Song)
 WHERE l.liked = true
 WITH u, s, l.timestamp AS listenTime, l.device AS device
-LIMIT 1600
 CREATE (u)-[:LIKED {
     timestamp: listenTime + duration({minutes: toInteger(rand() * 60)}),
     device: device

@@ -1,0 +1,14 @@
+## Dica importante:
+## Como você está usando o GitHub Codespaces, se você fechar o ambiente e abrir outro dia, pode ser que precise instalar novamente caso não tenha um arquivo requirements.txt.
+## Para evitar isso, você pode criar um arquivo chamado requirements.txt e colocar as linhas:
+## Plaintext
+## pandas
+## neo4j
+## google-generativeai
+## python-dotenv
+## Depois, basta rodar pip install -r requiriments.txt para instalar tudo de uma vez.
+pandas
+neo4j
+google-generativeai
+python-dotenv
+
