@@ -11,4 +11,6 @@ pandas
 neo4j
 google-generativeai
 python-dotenv
-
+google-generativeai 
+google-genai 
+python-dotenv
