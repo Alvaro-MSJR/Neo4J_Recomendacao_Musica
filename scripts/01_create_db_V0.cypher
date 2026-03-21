@@ -417,7 +417,12 @@ WITH s, row,
         WHEN row.playlist_genre = 'dance pop' THEN 'Dance Pop'
         WHEN row.playlist_genre = 'electropop' THEN 'Electropop'
         WHEN row.playlist_genre = 'post-teen pop' THEN 'Post-Teen Pop'
-        WHEN row.playlist_genre = 'latin' THEN 'Pop' // Opcional: agrupar gêneros extras
+        WHEN row.playlist_genre = 'tropical' THEN 'Tropical'
+        WHEN row.playlist_genre = 'gangster rap' THEN 'Gangster Rap'
+        WHEN row.playlist_genre = 'latin pop' THEN 'Latin Pop'
+        WHEN row.playlist_genre = 'latin hip hop' THEN 'Latin Hip Hop'
+        WHEN row.playlist_genre = 'hip hop' THEN 'Hip Hop'
+        WHEN row.playlist_genre = 'rap' THEN 'Rap'
         ELSE row.playlist_genre 
     END AS genreName
 
@@ -432,6 +437,39 @@ ON CREATE SET r.relevance =
         WHEN toInteger(row.track_popularity) > 60 THEN 'Medium'
         ELSE 'Low'
     END;
+
+// *****************************************************************
+//  BLOCO 7.1: Limpeza de Musicas que nao tem genero e Artistas
+//  Foi criado este ponto:
+//  Não Carregamos todos os generos;
+//  Nao temos usuarios;
+//  Simulamos uma base.
+//  Para evitar ficar lixo usamos este artificio.
+// *****************************************************************
+
+//7.1.1 Músicas Órfãs (Sem Autor ou Sem Gênero)
+//Esta é a verificação mais crítica, pois toda música no seu sistema deveria ter um artista e um gênero.
+Cypher
+MATCH (s:Song)
+WHERE NOT (s)<-[:COMPOSED]-(:Artist) 
+   OR NOT (s)-[:BELONGS_TO]->(:Genre)
+With count(s.title) AS TotalMusicas_Sem_Artista_Sem_Genero
+
+MATCH (ss:Song) 
+Return  
+    TotalMusicas_Sem_Artista_Sem_Genero,
+    ss.title AS Musica_Orfa,
+    NOT (ss)<-[:COMPOSED]-(:Artist) AS Sem_Artista,
+    NOT (ss)-[:BELONGS_TO]->(:Genre) AS Sem_Genero
+LIMIT 20;
+
+//7.1.2 Músicas Órfãs (Sem Autor ou Sem Gênero) - LIMPEZA
+//Esta é a verificação mais crítica, pois toda música no seu sistema deveria ter um artista e um gênero.
+Cypher
+MATCH (s:Song)
+WHERE NOT (s)<-[:COMPOSED]-(:Artist) 
+   OR NOT (s)-[:BELONGS_TO]->(:Genre)
+DETACH DELETE s;
 
 
 // *****************************************************************
@@ -536,15 +574,15 @@ MATCH ()-[r:BELONGS_TO]->() RETURN 'Pertences a gênero: ' + COUNT(r) AS Relacio
 // User: id, name, age, gender, city (80 usuários)
 // Artist: id, name, type, countryOfOrigin, startYear (18 artistas)
 // Genre: id, name, description, predominantEra, hexColor (5 gêneros)
-// Song: id, title, releaseYear, durationSec, popularity (500 músicas)
+// Song: id, title, releaseYear, durationSec, popularity (~300 músicas)
 // 
 // Relacionamentos e Propriedades:
 // 
 // LISTENED: timestamp, device, listeningDurationSec, liked, context (~1600 relações)
-// LIKED: timestamp, device (~800 relações)
+// LIKED: timestamp, device (~900 relações)
 // FOLLOWS: startDate, notificationsActive (~500 relações)
-// COMPOSED: participationType (500 relações)
-// BELONGS_TO: relevance (500 relações)
+// COMPOSED: participationType (~300 relações)
+// BELONGS_TO: relevance (~300 relações)
 // 
 //   Todas as propriedades foram traduzidas para inglês conforme solicitado e 
 // cada nó/relacionamento possui exatamente as propriedades especificadas!

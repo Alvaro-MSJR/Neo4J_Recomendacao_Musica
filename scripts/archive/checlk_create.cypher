@@ -23,6 +23,7 @@ SET s.playlist_genre =
 // Querys de analise de integridade e amostras de dados 
 // Relacionamentos duplicados (mesma música ligada ao mesmo gênero mais de uma vez)
 // *****************************************************************
+
 MATCH (s:Song)-[r:BELONGS_TO]->(g:Genre)
 WITH s, g, count(r) AS TotalRelacionamentos
 WHERE TotalRelacionamentos > 1
